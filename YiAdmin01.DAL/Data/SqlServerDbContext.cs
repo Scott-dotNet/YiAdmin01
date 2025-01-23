@@ -8,7 +8,7 @@ using YiAdmin01.Common.Global;
 namespace YiAdmin01.DAL.Data
 {
     /// <summary>
-    /// sqlserver数据库环境
+    /// sqlserver数据库环境设置
     /// </summary>
     public class SqlServerDbContext : DbContext
     {

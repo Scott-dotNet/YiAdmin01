@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
 using YiAdmin01.Common.Global;
-using YiSha.Util;
+using YiAdmin01.DAL.Enum;
 
 namespace YiAdmin01.DAL.Data
 {

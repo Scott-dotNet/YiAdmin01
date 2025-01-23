@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using YiAdmin01.Common.Global;
+﻿using YiAdmin01.Common.Global;
 using YiAdmin01.DAL.Data;
+using YiAdmin01.DAL.Enum;
 
 namespace YiAdmin01.DAL.Repository
 {
@@ -15,7 +11,7 @@ namespace YiAdmin01.DAL.Repository
     {
         public MyRepository BaseRepository()
         {
-            IDatabase database = null;
+            IMyDatabase database = null;
             string dbType = GlobalContext.SystemConfig.BDProvider;
             string dbConnectionString = GlobalContext.SystemConfig.DBConnectionString;
 
@@ -26,14 +22,14 @@ namespace YiAdmin01.DAL.Repository
                     database = new SqlServerDatabase(dbConnectionString);
                     break;
                 case "MySql":
-                    //TBD
+                //TBD
                 case "Oracle":
-                    //TBD
+                //TBD
                 default:
                     throw new Exception("未找到数据库配置");
             }
             return new MyRepository(database);
         }
-        }
     }
 }
+

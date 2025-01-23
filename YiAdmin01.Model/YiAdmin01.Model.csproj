@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\YiAdmin01.Common\YiAdmin01.Common.csproj" />
+  </ItemGroup>
+
 </Project>

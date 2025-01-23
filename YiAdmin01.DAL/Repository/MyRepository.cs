@@ -4,10 +4,8 @@ using System.Data.Common;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using YiAdmin01.DAL.Data;
-using YiAdmin01.Model.Configs;
+using Microsoft.EntityFrameworkCore.Storage;
+using YiAdmin01.Common.Configs;
 
 namespace YiAdmin01.DAL.Repository
 {
@@ -18,10 +16,10 @@ namespace YiAdmin01.DAL.Repository
     {
 
         #region 构造函数
-        public IDatabase db;
-        public MyRepository(IDatabase iDatabase)
+        public IMyDatabase db;
+        public MyRepository(IMyDatabase iDatabase)
         {
-            this.db = iDatabase;
+            db = iDatabase;
         }
         #endregion
 
@@ -37,7 +35,7 @@ namespace YiAdmin01.DAL.Repository
         }
         public async Task RollbackTrans()
         {
-            await db.RollBackTrans();
+            await db.RollbackTrans();
         }
         #endregion
 
@@ -50,13 +48,13 @@ namespace YiAdmin01.DAL.Repository
         {
             return await db.ExecuteBySql(strSql, dbParameter);
         }
-       
+
         #endregion
 
         #region 对象实体 添加、修改、删除
         public async Task<int> Insert<T>(T entity) where T : class
         {
-            return await db.Insert<T>(entity);
+            return await db.Insert(entity);
         }
         public async Task<int> Insert<T>(List<T> entity) where T : class
         {
@@ -69,13 +67,13 @@ namespace YiAdmin01.DAL.Repository
         }
         public async Task<int> Delete<T>(T entity) where T : class
         {
-            return await db.Delete<T>(entity);
+            return await db.Delete(entity);
         }
         public async Task<int> Delete<T>(List<T> entity) where T : class
         {
             return await db.Delete<T>(entity);
         }
-      
+
         public async Task<int> Delete<T>(long id) where T : class
         {
             return await db.Delete<T>(id);
@@ -84,17 +82,26 @@ namespace YiAdmin01.DAL.Repository
         {
             return await db.Delete<T>(id);
         }
-     
+
+        public async Task<int> Delete<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        {
+            return await db.Delete(condition);
+        }
 
         public async Task<int> Update<T>(T entity) where T : class
         {
-            return await db.Update<T>(entity);
+            return await db.Update(entity);
         }
         public async Task<int> Update<T>(List<T> entity) where T : class
         {
             return await db.Update<T>(entity);
         }
-      
+
+        public IQueryable<T> IQueryable<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        {
+            return db.IQueryable(condition);
+        }
+
         #endregion
 
         #region 对象实体 查询
@@ -116,7 +123,19 @@ namespace YiAdmin01.DAL.Repository
         {
             return await db.FindList<T>(strSql);
         }
-      
+
+        public async Task<IEnumerable<T>> FindList<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        {
+            return await db.FindList(condition);
+        }
+
+        public async Task<IEnumerable<T>> FindList<T>(Expression<Func<T, bool>> condition, Pagination pagination) where T : class, new()
+        {
+            var data = await db.FindList(condition, pagination.Sort, pagination.SortType.ToLower() == "asc" ? true : false, pagination.PageSize, pagination.PageIndex);
+            pagination.TotalCount = data.total;
+            return data.list;
+        }
+
         public async Task<(int total, IEnumerable<T> list)> FindList<T>(Pagination pagination) where T : class, new()
         {
             int total = pagination.TotalCount;
@@ -124,7 +143,7 @@ namespace YiAdmin01.DAL.Repository
             pagination.TotalCount = total;
             return data;
         }
-       
+
         public async Task<(int total, IEnumerable<T> list)> FindList<T>(string strSql, Pagination pagination) where T : class
         {
             int total = pagination.TotalCount;

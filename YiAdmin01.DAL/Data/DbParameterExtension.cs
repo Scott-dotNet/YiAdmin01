@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
+using YiAdmin01.DAL.Enum;
 
 namespace YiAdmin01.DAL.Data
 {

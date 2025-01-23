@@ -8,10 +8,29 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.12" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+  </ItemGroup>
+<!-- 预防错误 error “no file exists app.min.css”. -->
+	<ItemGroup>
+		<PackageReference Include="BuildBundlerMinifier2022" Version="2.9.11" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<PrepareForBuildDependsOn>
+			BundleMinify;
+		</PrepareForBuildDependsOn>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\YiAdmin01.BLL\YiAdmin01.BLL.csproj" />
+    <ProjectReference Include="..\YiAdmin01.Common\YiAdmin01.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\YiAdmin01.Common\YiAdmin01.Common.csproj" />
+    <Folder Include="Areas\SystemManage\Controllers\" />
+    <Folder Include="Areas\SystemManage\Views\" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties bundleconfig_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

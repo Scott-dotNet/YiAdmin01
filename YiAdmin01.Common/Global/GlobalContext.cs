@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
-using YiAdmin01.Model.Configs;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using YiAdmin01.Common.Configs;
 
 namespace YiAdmin01.Common.Global
 {

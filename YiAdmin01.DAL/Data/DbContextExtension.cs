@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using YiAdmin01.Common.Global;
 using YiAdmin01.Common.Utils;
 using Microsoft.EntityFrameworkCore.Metadata;
+using System.Data.Common;
 
 namespace YiAdmin01.DAL.Data
 {
@@ -63,6 +64,26 @@ namespace YiAdmin01.DAL.Data
         public static IEntityType GetEntityType<T>(DbContext dbcontext) where T : class
         {
             return dbcontext.Model.FindEntityType(typeof(T));
+        }
+
+        /// <summary>
+        /// 存储过程语句
+        /// </summary>
+        /// <param name="procName">存储过程名称</param>
+        /// <param name="dbParameter">执行命令所需的sql语句对应参数</param>
+        /// <returns></returns>
+        public static string BuilderProc(string procName, params DbParameter[] dbParameter)
+        {
+            StringBuilder strSql = new StringBuilder("exec " + procName);
+            if (dbParameter != null)
+            {
+                foreach (var item in dbParameter)
+                {
+                    strSql.Append(" " + item + ",");
+                }
+                strSql = strSql.Remove(strSql.Length - 1, 1);
+            }
+            return strSql.ToString();
         }
 
         /// <summary>

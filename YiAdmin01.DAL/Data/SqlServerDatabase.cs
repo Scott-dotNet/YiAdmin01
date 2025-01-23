@@ -1,20 +1,27 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore;
+using YiAdmin01.DAL.Repository;
 using System.Data.Common;
 using System.Data;
-using System.Linq;
+using Microsoft.EntityFrameworkCore.Metadata;
+using System.Collections;
 using System.Linq.Expressions;
 using System.Text;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore;
 using YiAdmin01.Common.Extension;
 
 namespace YiAdmin01.DAL.Data
 {
-    public class SqlServerDatabase : IDatabase
+    public class SqlServerDatabase : IMyDatabase
     {
+        /// <summary>
+        /// 构造方法
+        /// </summary>
+        /// <param name="connectionString"></param>
+        public SqlServerDatabase(string connectionString)
+        {
+            dbContext = new SqlServerDbContext(connectionString);
+        }
+        #region 属性
         /// <summary>
         /// 获取 当前使用的数据访问上下文对象
         /// </summary>
@@ -23,37 +30,26 @@ namespace YiAdmin01.DAL.Data
         /// 事务对象
         /// </summary>
         public IDbContextTransaction dbContextTransaction { get; set; }
-
-        #region 构造函数
-
-        public SqlServerDatabase(string connString)
-        { 
-            dbContext  = new SqlServerDbContext(connString);
-        }
         #endregion
-
 
         #region 事务提交
         /// <summary>
         /// 事务开始
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public async Task<IDatabase> BeginTrans()
+        public async Task<IMyDatabase> BeginTrans()
         {
-            DbConnection dbConn = dbContext.Database.GetDbConnection();
-            if (dbConn.State == ConnectionState.Closed) 
-            { 
-                await dbConn.OpenAsync();
+            DbConnection dbConnection = dbContext.Database.GetDbConnection();
+            if (dbConnection.State == ConnectionState.Closed)
+            {
+                await dbConnection.OpenAsync();
             }
             dbContextTransaction = await dbContext.Database.BeginTransactionAsync();
             return this;
         }
         /// <summary>
-        /// 事务提交
+        /// 提交当前操作的结果
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public async Task<int> CommitTrans()
         {
             try
@@ -78,25 +74,24 @@ namespace YiAdmin01.DAL.Data
             }
             finally
             {
-                if (dbContextTransaction == null) { await this.Close();}
+                if (dbContextTransaction == null)
+                {
+                    await this.Close();
+                }
             }
         }
         /// <summary>
-        /// 事务回滚
+        /// 把当前操作回滚成未提交状态
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public async Task RollBackTrans()
+        public async Task RollbackTrans()
         {
             await this.dbContextTransaction.RollbackAsync();
             await this.dbContextTransaction.DisposeAsync();
             await this.Close();
         }
         /// <summary>
-        /// 关闭连接
+        /// 关闭连接 内存回收
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public async Task Close()
         {
             await dbContext.DisposeAsync();
@@ -116,7 +111,6 @@ namespace YiAdmin01.DAL.Data
                 return dbContextTransaction == null ? await this.CommitTrans() : 0;
             }
         }
-
         public async Task<int> ExecuteBySql(string strSql, params DbParameter[] dbParameter)
         {
             if (dbContextTransaction == null)
@@ -129,17 +123,38 @@ namespace YiAdmin01.DAL.Data
                 return dbContextTransaction == null ? await this.CommitTrans() : 0;
             }
         }
-
+        public async Task<int> ExecuteByProc(string procName)
+        {
+            if (dbContextTransaction == null)
+            {
+                return await dbContext.Database.ExecuteSqlRawAsync(DbContextExtension.BuilderProc(procName));
+            }
+            else
+            {
+                await dbContext.Database.ExecuteSqlRawAsync(DbContextExtension.BuilderProc(procName));
+                return dbContextTransaction == null ? await this.CommitTrans() : 0;
+            }
+        }
+        public async Task<int> ExecuteByProc(string procName, params DbParameter[] dbParameter)
+        {
+            if (dbContextTransaction == null)
+            {
+                return await dbContext.Database.ExecuteSqlRawAsync(DbContextExtension.BuilderProc(procName, dbParameter), dbParameter);
+            }
+            else
+            {
+                await dbContext.Database.ExecuteSqlRawAsync(DbContextExtension.BuilderProc(procName, dbParameter), dbParameter);
+                return dbContextTransaction == null ? await this.CommitTrans() : 0;
+            }
+        }
         #endregion
 
-
-        #region 添加、修改、删除
+        #region 对象实体 添加、修改、删除
         public async Task<int> Insert<T>(T entity) where T : class
         {
             dbContext.Entry<T>(entity).State = EntityState.Added;
-            return dbContextTransaction == null ? await this.CommitTrans() : 0;   
+            return dbContextTransaction == null ? await this.CommitTrans() : 0;
         }
-
         public async Task<int> Insert<T>(IEnumerable<T> entities) where T : class
         {
             foreach (var entity in entities)
@@ -147,6 +162,69 @@ namespace YiAdmin01.DAL.Data
                 dbContext.Entry<T>(entity).State = EntityState.Added;
             }
             return dbContextTransaction == null ? await this.CommitTrans() : 0;
+        }
+
+        public async Task<int> Delete<T>() where T : class
+        {
+            IEntityType entityType = DbContextExtension.GetEntityType<T>(dbContext);
+            if (entityType != null)
+            {
+                string tableName = entityType.GetTableName();
+                return await this.ExecuteBySql(DbContextExtension.DeleteSql(tableName));
+            }
+            return -1;
+        }
+        public async Task<int> Delete<T>(T entity) where T : class
+        {
+            dbContext.Set<T>().Attach(entity);
+            dbContext.Set<T>().Remove(entity);
+            return dbContextTransaction == null ? await this.CommitTrans() : 0;
+        }
+        public async Task<int> Delete<T>(IEnumerable<T> entities) where T : class
+        {
+            foreach (var entity in entities)
+            {
+                dbContext.Set<T>().Attach(entity);
+                dbContext.Set<T>().Remove(entity);
+            }
+            return dbContextTransaction == null ? await this.CommitTrans() : 0;
+        }
+        public async Task<int> Delete<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        {
+            IEnumerable<T> entities = await dbContext.Set<T>().Where(condition).ToListAsync();
+            return entities.Count() > 0 ? await Delete(entities) : 0;
+        }
+        public async Task<int> Delete<T>(long keyValue) where T : class
+        {
+            IEntityType entityType = DbContextExtension.GetEntityType<T>(dbContext);
+            if (entityType != null)
+            {
+                string tableName = entityType.GetTableName();
+                string keyField = "Id";
+                return await this.ExecuteBySql(DbContextExtension.DeleteSql(tableName, keyField, keyValue));
+            }
+            return -1;
+        }
+        public async Task<int> Delete<T>(long[] keyValue) where T : class
+        {
+            IEntityType entityType = DbContextExtension.GetEntityType<T>(dbContext);
+            if (entityType != null)
+            {
+                string tableName = entityType.GetTableName();
+                string keyField = "Id";
+                return await this.ExecuteBySql(DbContextExtension.DeleteSql(tableName, keyField, keyValue));
+            }
+            return -1;
+        }
+        public async Task<int> Delete<T>(string propertyName, long propertyValue) where T : class
+        {
+            IEntityType entityType = DbContextExtension.GetEntityType<T>(dbContext);
+            if (entityType != null)
+            {
+                string tableName = entityType.GetTableName();
+                return await this.ExecuteBySql(DbContextExtension.DeleteSql(tableName, propertyName, propertyValue));
+            }
+            return -1;
         }
 
         public async Task<int> Update<T>(T entity) where T : class
@@ -167,7 +245,6 @@ namespace YiAdmin01.DAL.Data
             }
             return dbContextTransaction == null ? await this.CommitTrans() : 0;
         }
-
         public async Task<int> Update<T>(IEnumerable<T> entities) where T : class
         {
             foreach (var entity in entities)
@@ -176,76 +253,52 @@ namespace YiAdmin01.DAL.Data
             }
             return dbContextTransaction == null ? await this.CommitTrans() : 0;
         }
-        public async Task<int> Delete<T>() where T : class
-        {
-            IEntityType entityType = DbContextExtension.GetEntityType<T>(dbContext);
-            if (entityType != null)
-            {
-                string tableName = entityType.GetTableName();
-                return await this.ExecuteBySql(DbContextExtension.DeleteSql(tableName));
-            }
-            return -1;
-        }
-
-        public async Task<int> Delete<T>(T entity) where T : class
+        public async Task<int> UpdateAllField<T>(T entity) where T : class
         {
             dbContext.Set<T>().Attach(entity);
-            dbContext.Set<T>().Remove(entity);
+            dbContext.Entry(entity).State = EntityState.Modified;
             return dbContextTransaction == null ? await this.CommitTrans() : 0;
         }
-
-        public async Task<int> Delete<T>(IEnumerable<T> entities) where T : class
+        public async Task<int> Update<T>(Expression<Func<T, bool>> condition) where T : class, new()
         {
-            foreach (var entity in entities)
-            {
-                dbContext.Set<T>().Attach(entity);
-                dbContext.Set<T>().Remove(entity);
-            }
-            return dbContextTransaction == null ? await this.CommitTrans() : 0;
+            IEnumerable<T> entities = await dbContext.Set<T>().Where(condition).ToListAsync();
+            return entities.Count() > 0 ? await Update(entities) : 0;
         }
 
-        public async Task<int> Delete<T>(long keyValue) where T : class
+        public IQueryable<T> IQueryable<T>(Expression<Func<T, bool>> condition) where T : class, new()
         {
-            IEntityType entityType = DbContextExtension.GetEntityType<T>(dbContext);
-            if (entityType != null)
-            {
-                string tableName = entityType.GetTableName();
-                string keyField = "Id";
-                return await this.ExecuteBySql(DbContextExtension.DeleteSql(tableName, keyField, keyValue));
-            }
-            return -1;
+            return dbContext.Set<T>().Where(condition);
         }
-
-        public async Task<int> Delete<T>(long[] keyValue) where T : class
-        {
-            IEntityType entityType = DbContextExtension.GetEntityType<T>(dbContext);
-            if (entityType != null)
-            {
-                string tableName = entityType.GetTableName();
-                string keyField = "Id";
-                return await this.ExecuteBySql(DbContextExtension.DeleteSql(tableName, keyField, keyValue));
-            }
-            return -1;
-        }
-
         #endregion
 
         #region 对象实体 查询
-        public async Task<T> FindEntity<T>(object KeyValue) where T : class
+        public async Task<T> FindEntity<T>(object keyValue) where T : class
         {
-            return await dbContext.Set<T>().FindAsync(KeyValue);
+            return await dbContext.Set<T>().FindAsync(keyValue);
+        }
+        public async Task<T> FindEntity<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        {
+            return await dbContext.Set<T>().Where(condition).FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<T>> FindList<T>() where T : class, new()
         {
             return await dbContext.Set<T>().ToListAsync();
         }
-
+        public async Task<IEnumerable<T>> FindList<T>(Func<T, object> orderby) where T : class, new()
+        {
+            var list = await dbContext.Set<T>().ToListAsync();
+            list = list.OrderBy(orderby).ToList();
+            return list;
+        }
+        public async Task<IEnumerable<T>> FindList<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        {
+            return await dbContext.Set<T>().Where(condition).ToListAsync();
+        }
         public async Task<IEnumerable<T>> FindList<T>(string strSql) where T : class
         {
             return await FindList<T>(strSql, null);
         }
-
         public async Task<IEnumerable<T>> FindList<T>(string strSql, DbParameter[] dbParameter) where T : class
         {
             using (var dbConnection = dbContext.Database.GetDbConnection())
@@ -254,20 +307,20 @@ namespace YiAdmin01.DAL.Data
                 return DatabasesExtension.IDataReaderToList<T>(reader);
             }
         }
-
-
         public async Task<(int total, IEnumerable<T> list)> FindList<T>(string sort, bool isAsc, int pageSize, int pageIndex) where T : class, new()
         {
             var tempData = dbContext.Set<T>().AsQueryable();
             return await FindList<T>(tempData, sort, isAsc, pageSize, pageIndex);
         }
-
+        public async Task<(int total, IEnumerable<T> list)> FindList<T>(Expression<Func<T, bool>> condition, string sort, bool isAsc, int pageSize, int pageIndex) where T : class, new()
+        {
+            var tempData = dbContext.Set<T>().Where(condition);
+            return await FindList<T>(tempData, sort, isAsc, pageSize, pageIndex);
+        }
         public async Task<(int total, IEnumerable<T>)> FindList<T>(string strSql, string sort, bool isAsc, int pageSize, int pageIndex) where T : class
         {
             return await FindList<T>(strSql, null, sort, isAsc, pageSize, pageIndex);
-
         }
-
         public async Task<(int total, IEnumerable<T>)> FindList<T>(string strSql, DbParameter[] dbParameter, string sort, bool isAsc, int pageSize, int pageIndex) where T : class
         {
             using (var dbConnection = dbContext.Database.GetDbConnection())
@@ -286,6 +339,21 @@ namespace YiAdmin01.DAL.Data
                 {
                     return (total, new List<T>());
                 }
+            }
+        }
+        private async Task<(int total, IEnumerable<T> list)> FindList<T>(IQueryable<T> tempData, string sort, bool isAsc, int pageSize, int pageIndex)
+        {
+            tempData = DatabasesExtension.AppendSort<T>(tempData, sort, isAsc);
+            var total = tempData.Count();
+            if (total > 0)
+            {
+                tempData = tempData.Skip<T>(pageSize * (pageIndex - 1)).Take<T>(pageSize).AsQueryable();
+                var list = await tempData.ToListAsync();
+                return (total, list);
+            }
+            else
+            {
+                return (total, new List<T>());
             }
         }
         #endregion
@@ -347,20 +415,5 @@ namespace YiAdmin01.DAL.Data
         }
         #endregion
 
-        private async Task<(int total, IEnumerable<T> list)> FindList<T>(IQueryable<T> tempData, string sort, bool isAsc, int pageSize, int pageIndex)
-        {
-            tempData = DatabasesExtension.AppendSort<T>(tempData, sort, isAsc);
-            var total = tempData.Count();
-            if (total > 0)
-            {
-                tempData = tempData.Skip<T>(pageSize * (pageIndex - 1)).Take<T>(pageSize).AsQueryable();
-                var list = await tempData.ToListAsync();
-                return (total, list);
-            }
-            else
-            {
-                return (total, new List<T>());
-            }
-        }
     }
 }

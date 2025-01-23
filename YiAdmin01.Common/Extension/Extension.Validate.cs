@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace YiSha.Util.Extension
+namespace YiAdmin01.Common.Extension
 {
     public static partial class Extensions
     {

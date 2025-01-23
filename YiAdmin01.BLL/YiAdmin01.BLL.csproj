@@ -6,4 +6,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.1" />
+    <PackageReference Include="System.Runtime.Caching" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\YiAdmin01.DAL\YiAdmin01.DAL.csproj" />
+    <ProjectReference Include="..\YiAdmin01.Entity\YiAdmin01.Entity.csproj" />
+    <ProjectReference Include="..\YiAdmin01.Model\YiAdmin01.Model.csproj" />
+    <ProjectReference Include="..\YiAdmin01.WebCode\YiAdmin01.WebCode.csproj" />
+  </ItemGroup>
+
 </Project>

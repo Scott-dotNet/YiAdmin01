@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YiSha.Util.Extension
+namespace YiAdmin01.Common.Extension
 {
     public static class LinqExtensions
     {

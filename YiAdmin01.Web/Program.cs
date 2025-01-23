@@ -1,7 +1,7 @@
 using Microsoft.Extensions.FileProviders;
+using YiAdmin01.Common.Configs;
 using YiAdmin01.Common.Global;
 using YiAdmin01.Common.Utils;
-using YiAdmin01.Model.Configs;
 
 namespace YiAdmin01.Web
 {
@@ -41,7 +41,7 @@ namespace YiAdmin01.Web
             //注册Encoding
             //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             //日志组件
-            builder.Logging.AddJsonConsole();
+            //builder.Logging.AddJsonConsole();
             //运行模式
             if (builder.Environment.IsDevelopment())
             {
@@ -53,6 +53,7 @@ namespace YiAdmin01.Web
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => false; // 
+                options.Secure = CookieSecurePolicy.None;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
             //启用缓存功能
@@ -143,6 +144,7 @@ namespace YiAdmin01.Web
                 FileProvider = new PhysicalFileProvider(resource),
                 OnPrepareResponse = GlobalContext.SetCacheControl,
             });
+            app.UseHttpsRedirection();
             //用户路由
             app.UseRouting();
             //用户 Session
