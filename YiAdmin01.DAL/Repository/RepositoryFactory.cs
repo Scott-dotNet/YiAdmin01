@@ -12,7 +12,7 @@ namespace YiAdmin01.DAL.Repository
         public MyRepository BaseRepository()
         {
             IMyDatabase database = null;
-            string dbType = GlobalContext.SystemConfig.BDProvider;
+            string dbType = GlobalContext.SystemConfig.DBProvider;
             string dbConnectionString = GlobalContext.SystemConfig.DBConnectionString;
 
             switch (dbType)

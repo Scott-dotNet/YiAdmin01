@@ -124,6 +124,11 @@ namespace YiAdmin01.DAL.Repository
             return await db.FindList<T>(strSql);
         }
 
+        public async Task<IEnumerable<T>> FindList<T>(string strSql, DbParameter[] dbParameter) where T : class
+        {
+            return await db.FindList<T>(strSql, dbParameter);
+        }
+
         public async Task<IEnumerable<T>> FindList<T>(Expression<Func<T, bool>> condition) where T : class, new()
         {
             return await db.FindList(condition);
@@ -180,6 +185,8 @@ namespace YiAdmin01.DAL.Repository
             pagination.TotalCount = data.total;
             return data.Item2;
         }
+
+        
 
         public async Task<object> FindObject(string strSql)
         {

@@ -155,7 +155,7 @@ namespace YiAdmin01.Web.Controllers
             {
                 await new UserBLL().UpdateUser(userObj.Data);
                 // Ìí¼Ó token
-                Operator.Instance.AddCurrent(userObj.Data.WebToken);
+                await Operator.Instance.AddCurrent(userObj.Data.WebToken);
             }
 
             obj.Tag = userObj.Tag;

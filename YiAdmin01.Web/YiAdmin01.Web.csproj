@@ -26,11 +26,6 @@
     <ProjectReference Include="..\YiAdmin01.Common\YiAdmin01.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Areas\SystemManage\Controllers\" />
-    <Folder Include="Areas\SystemManage\Views\" />
-  </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties bundleconfig_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

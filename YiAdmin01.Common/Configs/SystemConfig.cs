@@ -25,7 +25,7 @@ namespace YiAdmin01.Common.Configs
         /// <summary>
         /// 数据库供应商
         /// </summary>
-        public string BDProvider { get; set; }
+        public string DBProvider { get; set; }
 
         /// <summary>
         /// 数据库连接字符串

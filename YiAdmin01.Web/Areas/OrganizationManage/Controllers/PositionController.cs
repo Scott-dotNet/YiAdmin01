@@ -15,7 +15,8 @@ namespace YiAdmin01.Web.Areas.OrganizationManage.Controllers
 
         #region View
         [HttpGet]
-        public IActionResult Index()
+        [AuthorizeFilter("organization:position:view")]
+        public IActionResult PositionIndex()
         {
             return View();
         }

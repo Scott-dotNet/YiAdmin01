@@ -31,7 +31,7 @@ namespace YiAdmin01.DAL.Data
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
                 // switch on the connection type name to enable support multiple providers
-                string dbType = GlobalContext.SystemConfig.BDProvider;
+                string dbType = GlobalContext.SystemConfig.DBProvider;
                 switch (dbType)
                 {
                     case "SqlServer":

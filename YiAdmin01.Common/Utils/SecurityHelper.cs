@@ -19,7 +19,7 @@ namespace YiAdmin01.Common.Utils
 
         public static byte[] MD5(string input)
         {
-            MD5CryptoServiceProvider md5CryptoServiceProvider = new MD5CryptoServiceProvider();
+            using MD5 md5CryptoServiceProvider = System.Security.Cryptography.MD5.Create();           
             byte[] byteArr = md5CryptoServiceProvider.ComputeHash(Encoding.UTF8.GetBytes(input));
             return byteArr;
         }
@@ -164,14 +164,14 @@ namespace YiAdmin01.Common.Utils
             try
             {
                 var encoding = new ASCIIEncoding();
-                using (DESCryptoServiceProvider desCryptoServiceProvider = new DESCryptoServiceProvider())
+                using (TripleDES tripleDes = TripleDES.Create())
                 {
                     byte[] inputArr = Encoding.UTF8.GetBytes(input);
-                    desCryptoServiceProvider.Key = encoding.GetBytes(key);
-                    desCryptoServiceProvider.IV = encoding.GetBytes(iv);
+                    tripleDes.Key = encoding.GetBytes(key);
+                    tripleDes.IV = encoding.GetBytes(iv);
                     using (MemoryStream memoryStream = new MemoryStream())
                     {
-                        using (CryptoStream cryptoStream = new CryptoStream(memoryStream, desCryptoServiceProvider.CreateEncryptor(), CryptoStreamMode.Write))
+                        using (CryptoStream cryptoStream = new CryptoStream(memoryStream, tripleDes.CreateEncryptor(), CryptoStreamMode.Write))
                         {
                             cryptoStream.Write(inputArr, 0, inputArr.Length);
                             cryptoStream.FlushFinalBlock();
@@ -220,13 +220,13 @@ namespace YiAdmin01.Common.Utils
             try
             {
                 var encoding = new ASCIIEncoding();
-                using (DESCryptoServiceProvider desCryptoServiceProvider = new DESCryptoServiceProvider())
+                using (TripleDES tripleDes = TripleDES.Create())
                 {
-                    desCryptoServiceProvider.Key = encoding.GetBytes(key);
-                    desCryptoServiceProvider.IV = encoding.GetBytes(iv);
+                    tripleDes.Key = encoding.GetBytes(key);
+                    tripleDes.IV = encoding.GetBytes(iv);
                     using (MemoryStream memoryStream = new MemoryStream())
                     {
-                        using (CryptoStream cryptoStream = new CryptoStream(memoryStream, desCryptoServiceProvider.CreateDecryptor(), CryptoStreamMode.Write))
+                        using (CryptoStream cryptoStream = new CryptoStream(memoryStream, tripleDes.CreateDecryptor(), CryptoStreamMode.Write))
                         {
                             cryptoStream.Write(byteArr, 0, byteArr.Length);
                             cryptoStream.FlushFinalBlock();
