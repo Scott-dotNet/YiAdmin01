@@ -16,6 +16,11 @@ namespace YiAdmin01.BLL.Cache
             return CacheFactory.Cache.RemoveCache(CacheKey);
         }
 
+        public virtual bool Remove(string key)
+        {
+            return CacheFactory.Cache.RemoveCache(key);
+        }
+
         public virtual Task<List<T>> GetList()
         {
             throw new Exception("请在子类实现");

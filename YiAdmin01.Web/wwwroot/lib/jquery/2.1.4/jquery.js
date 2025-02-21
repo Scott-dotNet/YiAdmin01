@@ -5261,8 +5261,10 @@ jQuery.fn.extend({
 			if ( elem.parentNode ) {
 				if ( keepData && jQuery.contains( elem.ownerDocument, elem ) ) {
 					setGlobalEval( getAll( elem, "script" ) );
-				}
-				elem.parentNode.removeChild( elem );
+				}			
+				elem.parentNode.removeChild(elem);
+
+					
 			}
 		}
 
