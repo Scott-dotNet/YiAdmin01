@@ -29,7 +29,9 @@ namespace YiAdmin01.Entity
 
         public virtual void Create()
         {
-            Id = IdGeneratorHelper.Instance.GetId();
+            if (Id == null || Id == 0) { 
+                Id = IdGeneratorHelper.Instance.GetId();
+            }
         }
     }
 
@@ -48,7 +50,10 @@ namespace YiAdmin01.Entity
 
         public new async Task Create()
         {
-            base.Create();
+            if (Id == null || Id == 0)
+            {
+                base.Create();
+            }
 
             if (BaseCreateTime == null)
             {

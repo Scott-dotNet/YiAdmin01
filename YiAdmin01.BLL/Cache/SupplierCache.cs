@@ -17,7 +17,7 @@ namespace YiAdmin01.BLL.Cache
 
         public async Task<List<SupplierEntity>> GetList(SupplierListParam param)
         {
-            String supplierCachekey = $"{CacheKey}_{param.CompanyCnName}";
+            String supplierCachekey = $"{CacheKey}_{param.SupplierName}";
             var cacheList = CacheFactory.Cache.GetCache<List<SupplierEntity>>(supplierCachekey);
             if (cacheList == null)
             {

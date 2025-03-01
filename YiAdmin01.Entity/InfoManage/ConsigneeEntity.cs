@@ -29,7 +29,7 @@ namespace YiAdmin01.Entity.InfoManage
         ///  中文名
         /// </summary>
         /// <returns></returns>
-        public string CompanyCnName { get; set; }
+        public string ConsigneeName { get; set; }
         /// <summary>
         /// 中文地址
         /// </summary>

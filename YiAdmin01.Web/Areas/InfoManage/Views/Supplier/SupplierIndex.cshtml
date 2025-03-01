@@ -7,7 +7,7 @@
             <div class="select-list">
                 <ul>
                     <li>
-                        供应商名称：<input id="companyCnName" col="CompanyCnName" type="text" />
+                        供应商名称：<input id="supplierName" col="SupplierName" type="text" />
                     </li>
                     <li>
                         手机号码：<input id="tel" col="Tel" type="text" />
@@ -59,7 +59,7 @@
                 { field: 'Id', title: 'Id', visible: false },
                 { field: 'SupplierCode', title: '编码' },
                 { field: 'Abbreviation', title: '简称' },
-                { field: 'CompanyCnName', title: '名称' },
+                { field: 'SupplierName', title: '名称' ,sortable: true },
                 { field: 'CnAddress', title: '地址' },
                 { field: 'ContactPerson', title: '联系人' },
                 { field: 'Tel', title: '电话' },
@@ -69,7 +69,7 @@
                 {
                     field: 'SupplierStatus', title: '状态',
                     formatter: function (value, row, index) {
-                        if (value == "@StatusEnum.Yes.ParseToInt()") {
+                        if (row.SupplierStatus == "@StatusEnum.Yes.ParseToInt()") {
                             return '<span class="badge badge-primary">' + "@StatusEnum.Yes.GetDescription()" + '</span>';
                         } else {
                             return '<span class="badge badge-warning">' + "@StatusEnum.No.GetDescription()" + '</span>';
@@ -147,15 +147,15 @@
         ys.exportExcel(url, postData);
     }
 
-    // function importForm() {
-    //   ys.openDialog({
-    //         title: "导入用户数据",
-    //         content: '@Url.Content("~/InfoManage/Supplier/SuppllierImport")',
-    //         height: "280px",
-    //         callback: function (index, layero) {
-    //             var iframeWin = window[layero.find('iframe')[0]['name']];
-    //             iframeWin.saveForm(index);
-    //         }
-    //     });
-    // }
+    function importForm() {
+      ys.openDialog({
+            title: "导入用户数据",
+            content: '@Url.Content("~/InfoManage/Supplier/SupplierImport")',
+            height: "280px",
+            callback: function (index, layero) {
+                var iframeWin = window[layero.find('iframe')[0]['name']];
+                iframeWin.saveForm(index);
+            }
+        });
+    }
 </script>

@@ -7,6 +7,7 @@ using YiAdmin01.Common.Extension;
 using YiAdmin01.BLL.Cache;
 using YiAdmin01.BLL.Services.OrganizationManage;
 using YiAdmin01.Common.Utils;
+using YiAdmin01.Entity;
 
 namespace YiAdmin01.BLL.Business.InfoBLL
 {
@@ -85,7 +86,7 @@ namespace YiAdmin01.BLL.Business.InfoBLL
             await supplierService.SaveForm(entity);
 
             // 清除缓存里面的数据
-            //string key = supplierCache.CacheKey + entity.CompanyCnName.ParseToString();
+            //string key = supplierCache.CacheKey + entity.SupolierName.ParseToString();
             //supplierCache.Remove(key);
 
             obj.Data = entity.Id.ParseToString();
@@ -112,6 +113,39 @@ namespace YiAdmin01.BLL.Business.InfoBLL
             //}
 
             obj.Tag = 1;
+            return obj;
+        }
+
+
+        public async Task<TData> ImportSupplier(ImportParam param, List<SupplierEntity> list)
+        {
+            TData obj = new TData();
+            if (list.Count != 0)
+            {
+                foreach (SupplierEntity entity in list)
+                {
+                    SupplierEntity dbEntity = await supplierService.GetEntity(entity.SupplierName);
+                    if (dbEntity != null)
+                    {
+                        entity.Id = dbEntity.Id;
+                        if (param.IsOverride == 1)
+                        {
+                            await supplierService.SaveForm(entity);
+                            //await RemoveCacheById(entity.Id.Value);
+                        }
+                    }
+                    else
+                    {
+                        await supplierService.SaveForm(entity);
+                        //await RemoveCacheById(entity.Id.Value);
+                    }
+                }
+                obj.Tag = 1;
+            }
+            else
+            {
+                obj.Message = " 未找到导入的数据";
+            }
             return obj;
         }
         #endregion

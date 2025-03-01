@@ -3,6 +3,7 @@ using YiAdmin01.Common.Configs;
 using YiAdmin01.Common.Extension;
 using YiAdmin01.Common.Utils;
 using YiAdmin01.DAL.Repository;
+using YiAdmin01.Entity;
 using YiAdmin01.Entity.InfoManage;
 using YiAdmin01.Model.Param;
 
@@ -40,13 +41,23 @@ namespace YiAdmin01.BLL.Services.InfoService
         }
 
         /// <summary>
-        /// 获取货主/收货人实体
+        /// 获取货主/收货人实体By Id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         public async Task<ConsigneeEntity> GetEntity(long id)
         {
             return await this.BaseRepository().FindEntity<ConsigneeEntity>(id);
+        }
+
+        /// <summary>
+        /// 获取货主/收货人实体 By Name
+        /// </summary>
+        /// <param name="consigneeName"></param>
+        /// <returns></returns>
+        public async Task<ConsigneeEntity> GetEntity(string consigneeName)
+        {
+            return await this.BaseRepository().FindEntity<ConsigneeEntity>(p => p.ConsigneeName == consigneeName);
         }
 
         /// <summary>
@@ -60,11 +71,11 @@ namespace YiAdmin01.BLL.Services.InfoService
             expression = expression.And(t => t.BaseIsDelete == 0);
             if (entity.Id.IsNullOrZero())
             { //新增
-                expression = expression.And(t => t.CompanyCnName == entity.CompanyCnName);
+                expression = expression.And(t => t.ConsigneeName == entity.ConsigneeName);
             }
             else
             {//编辑
-                expression = expression.And(t => t.CompanyCnName == entity.CompanyCnName && t.Id != entity.Id);
+                expression = expression.And(t => t.ConsigneeName == entity.ConsigneeName && t.Id != entity.Id);
             }
             return this.BaseRepository().IQueryable(expression).Count() > 0 ? true : false;
         }
@@ -105,22 +116,19 @@ namespace YiAdmin01.BLL.Services.InfoService
         #region 私有方法
         private Expression<Func<ConsigneeEntity, bool>> ListFilter(ConsigneeListParam param)
         {
-            var expression = LinqExtensions.True<ConsigneeEntity>();
+            if (param.ConsigneeStatus == -1)
+            {
+                param.ConsigneeStatus = null;
+            }
+
+            //****根据查询字段自动过滤条件****
+            var expression = LinqExtensions.GetExpressionItems<ConsigneeEntity, ConsigneeListParam>(param);
             if (param != null)
             {
-                if (!string.IsNullOrEmpty(param.CompanyCnName))
+                if (!string.IsNullOrEmpty(param.ConsigneeIds))
                 {
-                    expression = expression.And(t => t.CompanyCnName.Contains(param.CompanyCnName));
-                }
-
-                if (!string.IsNullOrEmpty(param.Tel))
-                {
-                    expression = expression.And(t => t.Tel.Contains(param.Tel));
-                }
-
-                if (param.ConsigneeStatus > -1)
-                {
-                    expression = expression.And(t => t.ConsigneeStatus == param.ConsigneeStatus);
+                    long[] supplierIdList = TextHelper.SplitToArray<long>(param.ConsigneeIds, ',');
+                    expression = expression.And(t => supplierIdList.Contains(t.Id.Value));
                 }
                 if (!string.IsNullOrEmpty(param.StartTime.ParseToString()))
                 {
@@ -134,7 +142,7 @@ namespace YiAdmin01.BLL.Services.InfoService
             }
             return expression;
         }
-        #endregion
+            #endregion
 
     }
 }

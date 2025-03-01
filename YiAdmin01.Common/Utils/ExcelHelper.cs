@@ -31,6 +31,7 @@ namespace YiAdmin01.Common.Utils
         {
             sFileName = string.Format("{0}_{1}", SecurityHelper.GetGuid(true), sFileName);
             string sRoot = GlobalContext.HostingEnvironment.ContentRootPath;
+            // 文件夹路径
             string partDirectory = string.Format("Resource{0}Export{0}Excel", Path.DirectorySeparatorChar);
             string sDirectory = Path.Combine(sRoot, partDirectory);
             string sFilePath = Path.Combine(sDirectory, sFileName);

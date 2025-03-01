@@ -1,0 +1,101 @@
+﻿@{
+    Layout = "~/Views/Shared/_FormWhite.cshtml";
+}
+
+<div class="wrapper animated fadeInRight">
+    <form id="form" class="form-horizontal m">
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">当前节点编码<font class="red"> *</font></label>
+            <div class="col-sm-8">
+                <input id="currentNodeCode" col="CurrentNodeCode" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">当前节点名称</label>
+            <div class="col-sm-8">
+                <input id="currentNodeName" col="CurrentNodeName" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">操作者Id</label>
+            <div class="col-sm-8">
+                <input id="operatorId" col="OperatorId" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">操作者名称</label>
+            <div class="col-sm-8">
+                <input id="operatorName" col="OperatorName" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">结果状态</label>
+            <div class="col-sm-8">
+                 <div id="resultStatus" col="ResultStatus" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">审批状态</label>
+            <div class="col-sm-8">
+                <div id="approvedStatus" col="ApprovedStatus" type="text" class="form-control" />
+            </div>
+        </div>
+        
+    </form>
+</div>
+
+<script type="text/javascript">
+    var id = ys.request("id");
+    $(function () {
+
+        $("#resultStatus").ysRadioBox({ data: ys.getJson(@Html.Raw(typeof(ResultStatusEnum).EnumToDictionaryString())) });
+        $("#approvedStatus").ysRadioBox({ data: ys.getJson(@Html.Raw(typeof(ApprovedStatusEnum).EnumToDictionaryString())) });
+
+        getForm();
+
+        $('#form').validate({
+            rules: {
+                currentNodeCode: { required: true }
+            }
+        });
+    });
+
+    function getForm() {
+        if (id > 0) {
+            ys.ajax({
+                url: '@Url.Content("~/InfoManage/AppointmentRecord/GetFormJson")' + '?id=' + id,
+                type: 'get',
+                success: function (obj) {
+                    if (obj.Tag == 1) {
+                        $('#form').setWebControls(obj.Data);
+                    }
+                }
+            });
+        }
+        else {
+            var defaultData = {};
+            $('#form').setWebControls(defaultData);
+        }
+    }
+
+    function saveForm(index) {
+        if ($('#form').validate().form()) {
+            var postData = $('#form').getWebControls({ Id: id });
+            ys.ajax({
+                url: '@Url.Content("~/InfoManage/AppointmentRecord/SaveFormJson")',
+                type: 'post',
+                data: postData,
+                success: function (obj) {
+                    if (obj.Tag == 1) {
+                        ys.msgSuccess(obj.Message);
+                        parent.searchGrid();
+                        parent.layer.close(index);
+                    }
+                    else {
+                        ys.msgError(obj.Message);
+                    }
+                }
+            });
+        }
+    }
+</script>

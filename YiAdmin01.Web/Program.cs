@@ -134,10 +134,15 @@ namespace YiAdmin01.Web
                 app.UseExceptionHandler("/Help/Error");
             }
             //默认的静态目录路径
-            app.UseStaticFiles();
+            //app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = GlobalContext.SetCacheControl
+            });
             //用户自定义静态目录
             string resource = Path.Combine(app.Environment.ContentRootPath, "Resource");
             if (!Directory.Exists(resource)) Directory.CreateDirectory(resource);
+
             app.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = "/Resource",

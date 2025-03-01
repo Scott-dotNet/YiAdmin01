@@ -36,7 +36,7 @@ namespace YiAdmin01.BLL.Services.InfoService
 
         public async Task<SupplierEntity> GetEntity(string SupplierName)
         {
-            return await BaseRepository().FindEntity<SupplierEntity>(p => p.CompanyCnName == SupplierName);
+            return await BaseRepository().FindEntity<SupplierEntity>(p => p.SupplierName == SupplierName);
         }
 
         public bool ExistSupplierName(SupplierEntity entity)
@@ -45,11 +45,11 @@ namespace YiAdmin01.BLL.Services.InfoService
             expression = expression.And(t => t.BaseIsDelete == 0);
             if (entity.Id.IsNullOrZero())
             { //新增
-                expression = expression.And(t => t.CompanyCnName == entity.CompanyCnName);
+                expression = expression.And(t => t.SupplierName == entity.SupplierName);
             }
             else
             {//编辑
-                expression = expression.And(t => t.CompanyCnName == entity.CompanyCnName && t.Id != entity.Id);
+                expression = expression.And(t => t.SupplierName == entity.SupplierName && t.Id != entity.Id);
             }
             return this.BaseRepository().IQueryable(expression).Count() > 0 ? true : false;
         }

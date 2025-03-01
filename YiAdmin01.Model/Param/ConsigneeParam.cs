@@ -10,15 +10,15 @@ namespace YiAdmin01.Model.Param
     public class ConsigneeListParam : DateTimeParam
     {
 
-        public string CompanyCnName { get; set; }
+        public string ConsigneeName { get; set; }
 
         public string Tel { get; set; }
         public int? ConsigneeStatus { get; set; }
 
         /// <summary>
-        /// 多个供应商Id
+        /// ConsigneeIds
         /// </summary>
-        //public string SupplierIds { get; set; }
+        public string ConsigneeIds { get; set; }
 
 
     }

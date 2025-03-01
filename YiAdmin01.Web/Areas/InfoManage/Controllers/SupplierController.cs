@@ -36,6 +36,13 @@ namespace YiAdmin01.Web.Areas.InfoManage.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        //[AuthorizeFilter("info:supplier:view")]
+        public IActionResult SupplierImport()
+        {
+            return View();
+        }
         #endregion
 
         #region 获取数据
@@ -71,7 +78,7 @@ namespace YiAdmin01.Web.Areas.InfoManage.Controllers
             var list = await supplierBLL.GetList(param);
             if (list.Tag == 1)
             {
-                obj.Data = string.Join(",", list.Data.Select(p => p.CompanyCnName));
+                obj.Data = string.Join(",", list.Data.Select(p => p.SupplierName));
                 obj.Tag = 1;
             }
             return Json(obj);
@@ -96,7 +103,16 @@ namespace YiAdmin01.Web.Areas.InfoManage.Controllers
         }
 
         [HttpPost]
-        [AuthorizeFilter("organization:user:edit")]
+        [AuthorizeFilter("info:supplier:edit")]
+        public async Task<IActionResult> ImportSupplierJson(ImportParam param)
+        {
+            List<SupplierEntity> list = new ExcelHelper<SupplierEntity>().ImportFromExcel(param.FilePath);
+            TData obj = await supplierBLL.ImportSupplier(param, list);
+            return Json(obj);
+        }
+
+        [HttpPost]
+        [AuthorizeFilter("info:supplier:edit")]
         public async Task<IActionResult> ExportSupplierJson(SupplierListParam param)
         {
             TData<string> obj = new TData<string>();

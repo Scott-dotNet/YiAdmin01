@@ -5,6 +5,8 @@ using YiAdmin01.Model.Param;
 using YiAdmin01.Model;
 using YiAdmin01.Common.Extension;
 using YiAdmin01.BLL.Cache;
+using YiAdmin01.BLL.Services.OrganizationManage;
+using YiAdmin01.Entity;
 
 namespace YiAdmin01.BLL.Business.InfoBLL
 {
@@ -37,8 +39,8 @@ namespace YiAdmin01.BLL.Business.InfoBLL
         public async Task<TData<ConsigneeEntity>> GetEntity(long id)
         {
             TData<ConsigneeEntity> obj = new TData<ConsigneeEntity>();
-
-            obj.Data = await consigneeCache.GetEntity(id);
+            obj.Data = await consigneeService.GetEntity(id);
+            //obj.Data = await consigneeCache.GetEntity(id);
             if (obj.Data != null)
             {
                 obj.Tag = 1;
@@ -65,6 +67,44 @@ namespace YiAdmin01.BLL.Business.InfoBLL
             //Cache 移除
             await consigneeService.DeleteForm(ids);
             obj.Tag = 1;
+            return obj;
+        }
+
+        /// <summary>
+        /// 导入货主/收货人
+        /// </summary>
+        /// <param name="param"></param>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public async Task<TData> ImportConsignee(ImportParam param, List<ConsigneeEntity> list)
+        {
+            TData obj = new TData();
+            if (list.Count != 0)
+            {
+                foreach (ConsigneeEntity entity in list)
+                {
+                    ConsigneeEntity dbEntity = await consigneeService.GetEntity(entity.ConsigneeName);
+                    if (dbEntity != null)
+                    {
+                        entity.Id = dbEntity.Id;
+                        if (param.IsOverride == 1)
+                        {
+                            await consigneeService.SaveForm(entity);
+                            //await RemoveCacheById(entity.Id.Value);
+                        }
+                    }
+                    else
+                    {
+                        await consigneeService.SaveForm(entity);
+                        //await RemoveCacheById(entity.Id.Value);
+                    }
+                }
+                obj.Tag = 1;
+            }
+            else
+            {
+                obj.Message = " 未找到导入的数据";
+            }
             return obj;
         }
         #endregion

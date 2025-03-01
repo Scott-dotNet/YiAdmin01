@@ -24,7 +24,7 @@ namespace YiAdmin01.BLL.Cache
         /// <returns></returns>
         public async Task<List<ConsigneeEntity>> GetList(ConsigneeListParam param)
         {
-            string consigneeCacheKey = $"{CacheKey}_{param.CompanyCnName}";
+            string consigneeCacheKey = $"{CacheKey}_{param.ConsigneeName}";
             var cacheList = CacheFactory.Cache.GetCache<List<ConsigneeEntity>>(consigneeCacheKey);
             if (cacheList == null)
             { //没有缓存

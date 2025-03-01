@@ -1,0 +1,169 @@
+﻿@{
+    Layout = "~/Views/Shared/_FormWhite.cshtml";
+}
+
+<div class="wrapper animated fadeInRight">
+    <form id="form" class="form-horizontal m">
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">货主名称<font class="red"> </font></label>
+            <div class="col-sm-8">
+                <input id="consigneeId" col="ConsigneeIds" />
+                @* <select id="consigneeName" col="ConsigneeName" class="form-control selectpicker" data-live-search="true"> *@
+				@* </select> *@
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">职位</label>
+            <div class="col-sm-4">
+                <div id="positionId" col="PositionIds"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">供应商名称</label>
+            <div class="col-sm-8">
+                <input id="supplierName" col="SupplierName" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">货物描述</label>
+            <div class="col-sm-8">
+                <input id="cargoName" col="CargoName" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">货物类型</label>
+            <div class="col-sm-8">
+                <span id="cargoType" col="CargoType"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">重量</label>
+            <div class="col-sm-8">
+                <input id="cargoWeight" col="CargoWeight" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">单位</label>
+            <div class="col-sm-8">
+                <span id="weightUnit" col="WeightUnit" ></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">体积</label>
+            <div class="col-sm-8">
+                <input id="volume" col="Volume" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">到达时间</label>
+            <div class="col-sm-8">
+                <span id="arrivalTime" col="ArrivalTime"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label ">备注</label>
+            <div class="col-sm-8">
+                <input id="remark" col="Remark" type="text" class="form-control" />
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    var id = ys.request("id");
+    $(function () {
+        $("#arrivalTime").ysComboBox({ data: ys.getJson(@Html.Raw(typeof(ArrivalTimeEnum).EnumToDictionaryString())) });
+        $("#weightUnit").ysComboBox({ data: ys.getJson(@Html.Raw(typeof(WeightUnitEnum).EnumToDictionaryString())) });
+        $("#cargoType").ysComboBox({ data: ys.getJson(@Html.Raw(typeof(CargoTypeEnum).EnumToDictionaryString())) });
+
+        $("#consigneeId").ysComboBox({
+            url: '@Url.Content("~/InfoManage/Consignee/GetListJson")',
+            dataName: "Result",
+            key: "Id",
+            value: "CompanyCnName",
+            class: "form-control",
+            multiple: false
+        });
+    
+
+        $("#positionId").ysComboBox({
+            url: '@Url.Content("~/OrganizationManage/Position/GetListJson")',
+            dataName: "Result",
+            key: "Id",
+            value: "PositionName",
+            class: "form-control",
+            multiple: true
+        });
+        
+
+        getForm();
+
+        $('#form').validate({
+            rules: {
+                cargoName: { required: true },
+                volume: { required: true },
+                
+            }
+        });
+    });
+
+    function getForm() {
+        if (id > 0) {
+            ys.ajax({
+                url: '@Url.Content("~/InfoManage/Appointment/GetFormJson")' + '?id=' + id,
+                type: 'get',
+                success: function (obj) {
+                    if (obj.Tag == 1) {
+                        $('#form').setWebControls(obj.Data);
+                    }
+                }
+            });
+        }
+        else {
+            var defaultData = {};
+            $('#form').setWebControls(defaultData);
+        }
+    }
+
+    function saveForm(index) {
+        if ($('#form').validate().form()) {
+            var postData = $('#form').getWebControls({ Id: id });
+            ys.ajax({
+                url: '@Url.Content("~/InfoManage/Appointment/SaveFormJson")',
+                type: 'post',
+                data: postData,
+                success: function (obj) {
+                    if (obj.Tag == 1) {
+                        ys.msgSuccess(obj.Message);
+                        parent.searchGrid();
+                        parent.layer.close(index);
+                    }
+                    else {
+                        ys.msgError(obj.Message);
+                    }
+                }
+            });
+        }
+    }
+
+	// function loadConsigneeName() {
+	// 	ys.ajax({
+	// 		url: '@Url.Content("~/InfoManage/Consignee/GetListJson")',
+	// 		type: 'get',
+	// 		async: false,
+	// 		dataTypes: 'json',
+	// 		success: function (obj) {
+	// 			if (obj.Tag == 1) {
+	// 				var data = obj.Data;
+	// 				var html = '';
+	// 				for (var i = 0; i < data.length; i++) {
+	// 					html += '<option value="' + data[i].Id + '">' + data[i].CompanyCnName + '</option>';
+	// 				}
+	// 				$("#consigneeName").html(html);
+	// 				$("#consigneeName").selectpicker('refresh');
+	// 			}
+	// 		}
+	// 	});
+	// }
+</script>

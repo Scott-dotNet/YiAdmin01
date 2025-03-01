@@ -1,0 +1,145 @@
+﻿@{
+    Layout = "~/Views/Shared/_FormWhite.cshtml";
+}
+
+<div class="wrapper animated fadeInRight">
+    <form id="form" class="form-horizontal m">
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">货主名称<font class="red"> *</font></label>
+            <div class="col-sm-4">
+                <div id="consigneeName" col="ConsigneeName"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">供应商名称<font class="red"> *</font></label>
+            <div class="col-sm-4">
+                <div id="supplierName" col="SupplierName"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">货物描述<font class="red"> *</font></label>
+            <div class="col-sm-4">
+                <input id="cargoName" col="CargoName" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">货物类型<font class="red"> *</font></label>
+            <div class="col-sm-4" id="cargoType" col="CargoType">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">重量<font class="red"> *</font></label>
+            <div class="col-sm-4">
+                <input id="cargoWeight" col="CargoWeight" type="text" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label"> 重量单位 <font class="red"> *</font></label>
+            <div class="col-sm-4" id="weightUnit" col="WeightUnit"></div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">体积<font class="red"> *</font></label>
+            <div class="col-sm-4">
+                <input id="volume" col="Volume" type="text" class="form-control" />
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">到达日期<font class="red"> *</font></label>
+            <div class="col-sm-4">
+                <input  id="arrivalDate" col="ArrivalDate" type="text" />
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">到达时间<font class="red"> *</font></label>
+            <div class="col-sm-4" id="arrivalTime" col="ArrivalTime"> 
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="col-sm-2 control-label ">备注</label>
+            <div class="col-sm-10">
+                <textarea id="remark" class="form-control" style="height:60px"></textarea>
+            </div>
+       </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    var id = ys.request("id");
+    $(function () {
+
+        laydate.render({ elem: '#arrivalDate', format: 'yyyy-MM-dd' });
+
+        $("#arrivalTime").ysComboBox({ data: ys.getJson(@Html.Raw(typeof(ArrivalTimeEnum).EnumToDictionaryString())) });
+        $("#weightUnit").ysComboBox({ data: ys.getJson(@Html.Raw(typeof(WeightUnitEnum).EnumToDictionaryString())) });
+        $("#cargoType").ysComboBox({ data: ys.getJson(@Html.Raw(typeof(CargoTypeEnum).EnumToDictionaryString())) });
+                
+
+        $("#consigneeName").ysComboBox({
+            url: '@Url.Content("~/InfoManage/Consignee/GetListJson")',
+            key: "ConsigneeName",
+            value: "ConsigneeName",
+            class: "form-control",
+            multiple: false
+        });
+
+         $("#supplierName").ysComboBox({
+            url: '@Url.Content("~/InfoManage/Supplier/GetListJson")',
+            key: "SupplierName",
+            value: "SupplierName",
+            class: "form-control",
+            multiple: false
+        });
+        
+        getForm();
+
+        $("#form").validate({
+            rules: {
+                cargoName: { required: true },
+                volume: { required: true },
+                
+            }
+        });
+    });
+
+    function getForm() {
+       if (id > 0) {
+            ys.ajax({
+                url: '@Url.Content("~/InfoManage/Appointment/GetFormJson")' + '?id=' + id,
+                type: 'get',
+                success: function (obj) {
+                    if (obj.Tag == 1) {
+                        $('#form').setWebControls(obj.Data);
+                    }
+                }
+            });
+        }
+        else {
+            var defaultData = {};
+            $('#form').setWebControls(defaultData);
+        }
+    }
+
+    function saveForm(index) {
+         if ($('#form').validate().form()) {
+            var postData = $('#form').getWebControls({ Id: id });
+            ys.ajax({
+                url: '@Url.Content("~/InfoManage/Appointment/SaveFormJson")',
+                type: 'post',
+                data: postData,
+                success: function (obj) {
+                    if (obj.Tag == 1) {
+                        ys.msgSuccess(obj.Message);
+                        parent.searchGrid();
+                        parent.layer.close(index);
+                    }
+                    else {
+                        ys.msgError(obj.Message);
+                    }
+                }
+            });
+        }
+    }
+</script>

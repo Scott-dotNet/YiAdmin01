@@ -60,5 +60,10 @@ namespace YiAdmin01.Common.Configs
         /// 是否允许一个账户在多处登录
         /// </summary>
         public bool LoginMultiple { get; set; }
+
+        /// <summary>
+        /// api地址
+        /// </summary>
+        public string ApiSite { get; set; }
     }
 }
